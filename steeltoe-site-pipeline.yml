@@ -1,0 +1,96 @@
+---
+jobs:
+- name: generate-site
+  serial: true
+  plan:
+  - get: steeltoe-site
+    trigger: true
+  - task: generate-site
+    config:
+      platform: linux
+      image: docker:///steeltoeoss/tools
+      inputs:
+      - name: steeltoe-site
+      run:
+        path: /hugo
+        args:
+        - --source=steeltoe-site
+        - --theme=github-project-landing-page
+      outputs:
+      - name: generated-site-content
+        path: steeltoe-site/public
+  - task: create-tarball
+    config:
+      platform: linux
+      image: docker:///steeltoeoss/tools
+      inputs:
+      - name: generated-site-content
+      run:
+        path: tar
+        args:
+        - czf
+        - steeltoe-site-content.tgz
+        - generated-site-content
+  - put: steeltoe-site-content
+    params: {from: steeltoe-site-content.tgz}
+
+- name: deploy-staging
+  serial: true
+  plan:
+  - get: steeltoe-site
+    passed: [generate-site]
+  - get: steeltoe-site-content
+    trigger: true
+    passed: [generate-site]
+  - task: extract-tarball
+    config:
+      platform: linux
+      image: docker:///steeltoeoss/tools
+      inputs:
+      - name: steeltoe-site-content
+      run:
+        path: tar
+        args:
+        - xzf
+        - steeltoe-site-content/steeltoe-site-content.tgz
+  - put: pws-staging
+    params:
+      manifest: steeltoe-site/manifest.yml
+      path: extract-tarball/generated-site-content
+      current_app_name: steeltoe-site
+
+resources:
+- name: steeltoe-site
+  type: git
+  source:
+    uri: git@github.com:SteelToeOSS/steeltoe-site.git
+    branch: master
+    private_key: {{github_private_key}}
+
+- name: steeltoe-site-content
+  type: s3
+  source:
+    access_key_id: {{access_key_id}}
+    secret_access_key: {{secret_access_key}}
+    bucket: steeltoe-site-content
+    versioned_file: steeltoe-site-content.tgz
+
+- name: pws-staging
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    username:  mstine+steeltoe-pws@pivotal.io
+    password: {{pws_password}}
+    organization: spring.io
+    space: steeltoe-staging
+    skip_cert_check: false
+
+- name: pws-prod
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    username: mstine+steeltoe-pws@pivotal.io
+    password: {{pws_password}}
+    organization: spring.io
+    space: steeltoe-production
+    skip_cert_check: false
