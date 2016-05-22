@@ -1,6 +1,6 @@
 ---
 jobs:
-- name: generate-site
+- name: generate-stage-site
   serial: true
   plan:
   - get: steeltoe-site
@@ -29,35 +29,94 @@ jobs:
         path: tar
         args:
         - czf
-        - steeltoe-site-content.tgz
+        - steeltoe-stage-content.tgz
         - generated-site-content
-  - put: steeltoe-site-content
-    params: {from: steeltoe-site-content.tgz}
+  - put: steeltoe-stage-content
+    params: {from: steeltoe-stage-content.tgz}
 
 - name: deploy-staging
   serial: true
   plan:
   - get: steeltoe-site
-    passed: [generate-site]
-  - get: steeltoe-site-content
+    passed: [generate-stage-site]
+  - get: steeltoe-stage-content
     trigger: true
-    passed: [generate-site]
+    passed: [generate-stage-site]
   - task: extract-tarball
     config:
       platform: linux
       image: docker:///steeltoeoss/tools
       inputs:
-      - name: steeltoe-site-content
+      - name: steeltoe-stage-content
       run:
         path: tar
         args:
         - xzf
-        - steeltoe-site-content/steeltoe-site-content.tgz
+        - steeltoe-stage-content/steeltoe-stage-content.tgz
   - put: pws-staging
     params:
-      manifest: steeltoe-site/manifest.yml
+      manifest: steeltoe-site/manifest-stage.yml
       path: extract-tarball/generated-site-content
-      current_app_name: steeltoe-site
+      current_app_name: steeltoe-stage
+
+- name: generate-prod-site
+  serial: true
+  plan:
+  - get: steeltoe-site
+  - task: generate-site
+    config:
+      platform: linux
+      image: docker:///steeltoeoss/tools
+      inputs:
+      - name: steeltoe-site
+      run:
+        path: /hugo
+        args:
+        - --baseURL=http://steeltoe.io
+        - --source=steeltoe-site
+        - --theme=github-project-landing-page
+      outputs:
+      - name: generated-site-content
+        path: steeltoe-site/public
+  - task: create-tarball
+    config:
+      platform: linux
+      image: docker:///steeltoeoss/tools
+      inputs:
+      - name: generated-site-content
+      run:
+        path: tar
+        args:
+        - czf
+        - steeltoe-prod-content.tgz
+        - generated-site-content
+  - put: steeltoe-prod-content
+    params: {from: steeltoe-prod-content.tgz}
+
+- name: deploy-prod
+  serial: true
+  plan:
+  - get: steeltoe-site
+    passed: [generate-prod-site]
+  - get: steeltoe-prod-content
+    trigger: true
+    passed: [generate-prod-site]
+  - task: extract-tarball
+    config:
+      platform: linux
+      image: docker:///steeltoeoss/tools
+      inputs:
+      - name: steeltoe-prod-content
+      run:
+        path: tar
+        args:
+        - xzf
+        - steeltoe-prod-content/steeltoe-prod-content.tgz
+  - put: pws-prod
+    params:
+      manifest: steeltoe-site/manifest-prod.yml
+      path: extract-tarball/generated-site-content
+      current_app_name: steeltoe-prod
 
 resources:
 - name: steeltoe-site
@@ -67,13 +126,21 @@ resources:
     branch: master
     private_key: {{github_private_key}}
 
-- name: steeltoe-site-content
+- name: steeltoe-stage-content
   type: s3
   source:
     access_key_id: {{access_key_id}}
     secret_access_key: {{secret_access_key}}
     bucket: steeltoe-site-content
-    versioned_file: steeltoe-site-content.tgz
+    versioned_file: steeltoe-stage-content.tgz
+
+- name: steeltoe-prod-content
+  type: s3
+  source:
+    access_key_id: {{access_key_id}}
+    secret_access_key: {{secret_access_key}}
+    bucket: steeltoe-site-content
+    versioned_file: steeltoe-prod-content.tgz
 
 - name: pws-staging
   type: cf
