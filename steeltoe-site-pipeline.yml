@@ -64,6 +64,9 @@ jobs:
       manifest: steeltoe-site/manifest-stage.yml
       path: extracted-tarball/generated-site-content
       current_app_name: steeltoe-stage
+  - put: slack-alert
+    params:
+      text: <!channel> Job $BUILD_JOB_NAME successfully deployed to staging in build $BUILD_ID!
 
 - name: generate-prod-site
   serial: true
@@ -130,6 +133,13 @@ jobs:
       path: extracted-tarball/generated-site-content
       current_app_name: steeltoe-prod
 
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
+
 resources:
 - name: steeltoe-site
   type: git
@@ -173,3 +183,8 @@ resources:
     organization: spring.io
     space: steeltoe-production
     skip_cert_check: false
+
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: https://hooks.slack.com/services/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
