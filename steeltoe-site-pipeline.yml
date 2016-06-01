@@ -16,9 +16,9 @@ jobs:
         args:
         - --source=steeltoe-site
         - --theme=github-project-landing-page
+        - --destination=../generated-site-content
       outputs:
       - name: generated-site-content
-        path: steeltoe-site/public
   - task: create-tarball
     config:
       platform: linux
@@ -29,10 +29,12 @@ jobs:
         path: tar
         args:
         - czf
-        - steeltoe-stage-content.tgz
+        - steeltoe-tarball/steeltoe-stage-content.tgz
         - generated-site-content
+      outputs:
+      - name: steeltoe-tarball
   - put: steeltoe-stage-content
-    params: {from: steeltoe-stage-content.tgz}
+    params: {file: steeltoe-tarball/steeltoe-stage-content.tgz}
 
 - name: deploy-staging
   serial: true
@@ -53,10 +55,14 @@ jobs:
         args:
         - xzf
         - steeltoe-stage-content/steeltoe-stage-content.tgz
+        - -C
+        - extracted-tarball
+      outputs:
+      - name: extracted-tarball
   - put: pws-staging
     params:
       manifest: steeltoe-site/manifest-stage.yml
-      path: extract-tarball/generated-site-content
+      path: extracted-tarball/generated-site-content
       current_app_name: steeltoe-stage
 
 - name: generate-prod-site
@@ -75,9 +81,9 @@ jobs:
         - --baseURL=http://steeltoe.io
         - --source=steeltoe-site
         - --theme=github-project-landing-page
+        - --destination=../generated-site-content
       outputs:
       - name: generated-site-content
-        path: steeltoe-site/public
   - task: create-tarball
     config:
       platform: linux
@@ -88,10 +94,12 @@ jobs:
         path: tar
         args:
         - czf
-        - steeltoe-prod-content.tgz
+        - steeltoe-tarball/steeltoe-prod-content.tgz
         - generated-site-content
+      outputs:
+      - name: steeltoe-tarball
   - put: steeltoe-prod-content
-    params: {from: steeltoe-prod-content.tgz}
+    params: {file: steeltoe-tarball/steeltoe-prod-content.tgz}
 
 - name: deploy-prod
   serial: true
@@ -112,10 +120,14 @@ jobs:
         args:
         - xzf
         - steeltoe-prod-content/steeltoe-prod-content.tgz
+        - -C
+        - extracted-tarball
+      outputs:
+      - name: extracted-tarball
   - put: pws-prod
     params:
       manifest: steeltoe-site/manifest-prod.yml
-      path: extract-tarball/generated-site-content
+      path: extracted-tarball/generated-site-content
       current_app_name: steeltoe-prod
 
 resources:
