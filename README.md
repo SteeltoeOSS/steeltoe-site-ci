@@ -2,7 +2,7 @@
 
 Contains the concourse pipeline file.
 
-####Location:
+#### Location:
 This is being built on [ci.spring.io](http://ci.spring.io) under the team `steeltoe`.
 
 Docker image is public and on DockerHub under the steeltoeoss organization.
@@ -11,10 +11,10 @@ S3 bucket is under the application platform team AWS account.
 
 PCF organization is `steeltoe.io`
 
-####Pipeline
+#### Pipeline
 Contains a staging pipeline and a production pipeline for the website (including documentation).
 
-#####Process (same for both staging and production):
+##### Process (same for both staging and production):
 
   1. Pulls down the docker image
   2. Clones the steeltoe-docs git repo into image
