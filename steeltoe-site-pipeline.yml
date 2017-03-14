@@ -67,9 +67,9 @@ jobs:
       - name: extracted-tarball
   - put: deploy-stage
     params:
-      manifest: steeltoe-site-stage/manifest-concourse.yml
+      manifest: steeltoe-site-stage/manifest-concourse-stage.yml
       path: extracted-tarball/generated-site-content
-      current_app_name: steeltoe-landing-dev-test
+      current_app_name: steeltoe-staging
 
 
 #### Production Jobs
@@ -139,9 +139,9 @@ jobs:
       - name: extracted-tarball
   - put: deploy-prod
     params:
-      manifest: steeltoe-site-prod/manifest-concourse.yml
+      manifest: steeltoe-site-prod/manifest-concourse-prod.yml
       path: extracted-tarball/generated-site-content
-      current_app_name: steeltoe-landing-prod-test
+      current_app_name: steeltoe.io
 
 
 #### Resources for jobs
@@ -150,15 +150,18 @@ resources:
 - name: steeltoe-site-prod
   type: git
   source:
-    uri: git@github.com:SteelToeOSS/steeltoe-site.git
+    uri: https://github.com/SteeltoeOSS/steeltoe-site.git
     branch: master
-    private_key: {{github_private_key}}
+    username: {{github_username}}
+    password: {{github_password}}
+
 - name: steeltoe-site-stage
   type: git
   source:
-    uri: git@github.com:SteelToeOSS/steeltoe-site.git
-    branch: dev-test
-    private_key: {{github_private_key}}
+    uri: https://github.com/SteeltoeOSS/steeltoe-site.git
+    branch: dev
+    username: {{github_username}}
+    password: {{github_password}}
 
 ### Publish to PWS resources
 - name: deploy-stage
@@ -167,33 +170,35 @@ resources:
     api: https://api.run.pivotal.io
     username: {{cf_username}}
     password: {{cf_password}}
-    organization: FrameworksAndRuntimes
-    space: development
+    organization: steeltoe.io
+    space: steeltoe.io
     skip_cert_check: false
+
 - name: deploy-prod
   type: cf
   source:
     api: https://api.run.pivotal.io
     username: {{cf_username}}
     password: {{cf_password}}
-    organization: FrameworksAndRuntimes
-    space: development
+    organization: steeltoe.io
+    space: steeltoe.io
     skip_cert_check: false
 
-### Storage of site contents resources
+### Storage of site contents on S3
 - name: steeltoe-stage-content
   type: s3
   source:
     access_key_id: {{access_key_id}}
     secret_access_key: {{secret_access_key}}
-    bucket: public.pivotal.com
-    versioned_file: steeltoe/steeltoe-stage-content.tgz
+    bucket: steeltoe-site-content
+    versioned_file: steeltoe-site/steeltoe-stage-content.tgz
+    region_name: us-west-1
 
 - name: steeltoe-prod-content
   type: s3
   source:
     access_key_id: {{access_key_id}}
     secret_access_key: {{secret_access_key}}
-    bucket: public.pivotal.com
-    versioned_file: steeltoe/steeltoe-prod-content.tgz
-
+    bucket: steeltoe-site-content
+    versioned_file: steeltoe-site/steeltoe-prod-content.tgz
+    region_name: us-west-1
