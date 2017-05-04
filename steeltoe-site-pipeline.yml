@@ -39,6 +39,13 @@ jobs:
       - name: steeltoe-tarball
   - put: steeltoe-stage-content
     params: {file: steeltoe-tarball/steeltoe-stage-content.tgz}
+  on_failure:
+    put: slack-alert
+    params:
+      username: concourse
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text: <!channel> Documentation job 'generate-stage-site' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
+  
 
 - name: deploy-staging
   serial: true
@@ -70,7 +77,18 @@ jobs:
       manifest: steeltoe-site-stage/manifest-concourse-stage.yml
       path: extracted-tarball/generated-site-content
       current_app_name: steeltoe-staging
-
+  on_failure:
+    put: slack-alert
+    params:
+      username: concourse
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text: <!channel> Documentation job 'deploy-staging' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
+  on_success: 
+    put: slack-alert
+    params:
+      username: concourse
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text: <!channel> New staging content successfully deployed to http://steeltoe-staging.cfapps.io by Build $BUILD_ID
 
 #### Production Jobs
 - name: generate-prod-site
@@ -111,6 +129,13 @@ jobs:
       - name: steeltoe-tarball
   - put: steeltoe-prod-content
     params: {file: steeltoe-tarball/steeltoe-prod-content.tgz}
+  on_failure:
+    put: slack-alert
+    params:
+      username: concourse
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text: <!channel> Documentation job 'generate-prod-site' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
+
 
 - name: deploy-prod
   serial: true
@@ -142,6 +167,27 @@ jobs:
       manifest: steeltoe-site-prod/manifest-concourse-prod.yml
       path: extracted-tarball/generated-site-content
       current_app_name: steeltoe.io
+  on_failure:
+    put: slack-alert
+    params:
+      username: concourse
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text: <!channel> Documentation job 'deploy-prod' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
+  on_success: 
+    put: slack-alert
+    params:
+      username: concourse
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text: <!channel> New production content successfully deployed to http://steeltoe.io by Build $BUILD_ID
+
+
+#Resource types
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: latest
 
 
 #### Resources for jobs
@@ -202,3 +248,7 @@ resources:
     bucket: steeltoe-site-content
     versioned_file: steeltoe-site/steeltoe-prod-content.tgz
     region_name: us-west-1
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: https://hooks.slack.com/services/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
