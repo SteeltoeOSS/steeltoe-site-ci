@@ -24,3 +24,8 @@ Contains a staging pipeline and a production pipeline for the website (including
   6. Publish task then pulls documentation package down from s3 onto image
   7. Publish task CF pushes the documentation along with the static buildpack to the steeltoe.io organization on PCF (staging or production).
 
+#### Fly Command
+
+```
+ fly -t spring set-pipeline -p steeltoe-docs -c steeltoe-site-pipeline.yml --var "github_username=GIT_USERNAME" --var "github_password=GIT_USER_OAUTH_TOKEN" --var "cf_username=CF_USERNAME" --var "cf_password=CF_PASSWORD" --var "access_key_id=AWS_KEY" --var "secret_access_key=AWS_SECRET_KEY"
+```
