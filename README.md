@@ -3,9 +3,9 @@
 Contains the concourse pipeline file.
 
 #### Location:
-This is being built on [ci.spring.io](http://ci.spring.io) under the team `steeltoe`.
+This is being built on Concourse instance (spring) under the team `steeltoe`.
 
-Docker image is public and on DockerHub under the steeltoeoss organization.
+Docker image is public and on DockerHub under the `steeltoeoss` organization.
 
 S3 bucket is under the application platform team AWS account.
 
@@ -17,7 +17,7 @@ Contains a staging pipeline and a production pipeline for the website (including
 ##### Process (same for both staging and production):
 
   1. Pulls down the docker image
-  2. Clones the steeltoe-docs git repo into image
+  2. Clones the steeltoe-site git repo into image
   3. Builds the docs
   4. Tars up the docs and puts them on s3
   5. Publish task pulls in the docker image
@@ -27,5 +27,5 @@ Contains a staging pipeline and a production pipeline for the website (including
 #### Fly Command
 
 ```
- fly -t spring set-pipeline -p steeltoe-docs -c steeltoe-site-pipeline.yml --var "github_username=GIT_USERNAME" --var "github_password=GIT_USER_OAUTH_TOKEN" --var "cf_username=CF_USERNAME" --var "cf_password=CF_PASSWORD" --var "access_key_id=AWS_KEY" --var "secret_access_key=AWS_SECRET_KEY"
+ fly -t TARGET_NAME set-pipeline -p PIPELINE -c steeltoe-site-pipeline.yml --var "github_username=GIT_USERNAME" --var "github_password=GIT_USER_OAUTH_TOKEN" --var "cf_username=CF_USERNAME" --var "cf_password=CF_PASSWORD" --var "access_key_id=AWS_KEY" --var "secret_access_key=AWS_SECRET_KEY" --var "slack_url=SLACK_HOOK_URL"
 ```
