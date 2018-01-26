@@ -43,13 +43,7 @@ jobs:
       - name: steeltoe-tarball
   - put: steeltoe-stage-content
     params: {file: steeltoe-tarball/steeltoe-stage-content.tgz}
-  on_failure:
-    put: slack-alert
-    params:
-      username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: <!here> Documentation job 'generate-stage-site' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
-  
+
 
 - name: deploy-staging
   serial: true
@@ -57,7 +51,6 @@ jobs:
   - get: steeltoe-site-stage
     passed: [generate-stage-site]
   - get: steeltoe-stage-content
-    trigger: true
     passed: [generate-stage-site]
   - task: extract-tarball
     config:
@@ -71,7 +64,7 @@ jobs:
         path: tar
         args:
         - xzf
-        - steeltoe-stage-content/steeltoe-stage-content.tgz
+        - steeltoe-stage-content/test-steeltoe-stage-content.tgz
         - -C
         - extracted-tarball
       outputs:
@@ -80,19 +73,7 @@ jobs:
     params:
       manifest: steeltoe-site-stage/manifest-concourse-stage.yml
       path: extracted-tarball/generated-site-content
-      current_app_name: steeltoe-staging
-  on_failure:
-    put: slack-alert
-    params:
-      username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: <!here> Documentation job 'deploy-staging' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
-  on_success: 
-    put: slack-alert
-    params:
-      username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: New staging content successfully deployed to http://steeltoe-staging.cfapps.io by Build $BUILD_ID
+      current_app_name: steeltoe-test-staging
 
 #### Production Jobs
 - name: generate-prod-site
@@ -137,13 +118,6 @@ jobs:
       - name: steeltoe-tarball
   - put: steeltoe-prod-content
     params: {file: steeltoe-tarball/steeltoe-prod-content.tgz}
-  on_failure:
-    put: slack-alert
-    params:
-      username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: <!here> Documentation job 'generate-prod-site' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
-
 
 - name: deploy-prod
   serial: true
@@ -151,7 +125,6 @@ jobs:
   - get: steeltoe-site-prod
     passed: [generate-prod-site]
   - get: steeltoe-prod-content
-    trigger: true
     passed: [generate-prod-site]
   - task: extract-tarball
     config:
@@ -165,37 +138,16 @@ jobs:
         path: tar
         args:
         - xzf
-        - steeltoe-prod-content/steeltoe-prod-content.tgz
+        - steeltoe-prod-content/test-steeltoe-prod-content.tgz
         - -C
         - extracted-tarball
       outputs:
       - name: extracted-tarball
   - put: deploy-prod
     params:
-      manifest: steeltoe-site-prod/manifest-concourse-prod.yml
+      manifest: steeltoe-site-prod/manifest-concourse-stage.yml
       path: extracted-tarball/generated-site-content
-      current_app_name: steeltoe.io
-  on_failure:
-    put: slack-alert
-    params:
-      username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: <!here> Documentation job 'deploy-prod' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
-  on_success: 
-    put: slack-alert
-    params:
-      username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: New production content successfully deployed to http://steeltoe.io by Build $BUILD_ID
-
-
-#Resource types
-resource_types:
-- name: slack-notification
-  type: docker-image
-  source:
-    repository: cfcommunity/slack-notification-resource
-    tag: latest
+      current_app_name: steeltoe-test-prod
 
 
 #### Resources for jobs
@@ -253,7 +205,7 @@ resources:
     access_key_id: {{access_key_id}}
     secret_access_key: {{secret_access_key}}
     bucket: steeltoe-site-content
-    versioned_file: steeltoe-site/steeltoe-stage-content.tgz
+    versioned_file: steeltoe-site/test-steeltoe-stage-content.tgz
     region_name: us-west-1
 
 - name: steeltoe-prod-content
@@ -262,10 +214,6 @@ resources:
     access_key_id: {{access_key_id}}
     secret_access_key: {{secret_access_key}}
     bucket: steeltoe-site-content
-    versioned_file: steeltoe-site/steeltoe-prod-content.tgz
+    versioned_file: steeltoe-site/test-steeltoe-prod-content.tgz
     region_name: us-west-1
 
-- name: slack-alert
-  type: slack-notification
-  source:
-    url: {{slack_url}}
