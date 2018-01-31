@@ -92,7 +92,7 @@ jobs:
     params:
       username: concourse
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: New staging content successfully deployed to http://steeltoe-staging.cfapps.io by Build $BUILD_ID
+      text: New staging content successfully deployed to https://steeltoe-staging.cfapps.io by Build $BUILD_ID
 
 #### Production Jobs
 - name: generate-prod-site
@@ -186,7 +186,7 @@ jobs:
     params:
       username: concourse
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      text: New production content successfully deployed to http://steeltoe.io by Build $BUILD_ID
+      text: New production content successfully deployed to https://steeltoe.io by Build $BUILD_ID
 
 
 #Resource types
