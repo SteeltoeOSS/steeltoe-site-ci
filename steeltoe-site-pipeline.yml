@@ -47,7 +47,7 @@ jobs:
     put: slack-alert
     params:
       username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      icon_url: https://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       text: <!here> Documentation job 'generate-stage-site' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
   
 
@@ -85,13 +85,13 @@ jobs:
     put: slack-alert
     params:
       username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      icon_url: https://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       text: <!here> Documentation job 'deploy-staging' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
   on_success: 
     put: slack-alert
     params:
       username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      icon_url: https://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       text: New staging content successfully deployed to https://steeltoe-staging.cfapps.io by Build $BUILD_ID
 
 #### Production Jobs
@@ -141,7 +141,7 @@ jobs:
     put: slack-alert
     params:
       username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      icon_url: https://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       text: <!here> Documentation job 'generate-prod-site' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
 
 
@@ -179,13 +179,13 @@ jobs:
     put: slack-alert
     params:
       username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      icon_url: https://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       text: <!here> Documentation job 'deploy-prod' failed at https://ci.spring.io/teams/steeltoe/pipelines/steeltoe-docs - Build $BUILD_ID
   on_success: 
     put: slack-alert
     params:
       username: concourse
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      icon_url: https://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       text: New production content successfully deployed to https://steeltoe.io by Build $BUILD_ID
 
 
